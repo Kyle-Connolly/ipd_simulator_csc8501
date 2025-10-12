@@ -1,25 +1,12 @@
 #include "pavlov_strategy.hpp"
+#include "game_state.hpp" 
 
-Action PAVLOV::decideAction() {
-    // First round = default to cooperate
-    if (playerHistory.empty()) {
+Action PAVLOV::decideAction(const GameState& state) {
+    if (state.firstRound) {
         return Action::Cooperate;
     }
-
-    // Get last actions
-    Action myLast = playerHistory.back();
-    Action oppLast = opponentHistory.back();
-
-    // Determine next action
-    if ((myLast == Action::Cooperate && oppLast == Action::Cooperate) ||
-        (myLast == Action::Defect && oppLast == Action::Defect)) {
-        // Win: Stay
-        return myLast;
-    }
-    else {
-        // Lose = switch actions
-        return (myLast == Action::Cooperate) ? Action::Defect : Action::Cooperate;
-    }
+    bool movesMatch = (state.lastMove == state.lastOpponentMove);
+    return movesMatch ? Action::Cooperate : Action::Defect;
 }
 
 std::string PAVLOV::name() const {

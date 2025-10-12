@@ -5,7 +5,7 @@
 class RND : public Strategy {
 public:
     RND(double probability);
-    Action decideAction() override;
+    Action decideAction(const GameState& state) override;
     std::string name() const override;
 private:
     double p;

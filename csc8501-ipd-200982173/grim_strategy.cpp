@@ -1,25 +1,13 @@
 #include "grim_strategy.hpp"
+#include "game_state.hpp" 
 
-Action GRIM::decideAction() {
-    // Round 1 = Cooperate
-    if (opponentHistory.empty()) {
+Action GRIM::decideAction(const GameState& state) {
+    if (state.firstRound) {
         return Action::Cooperate;
     }
-
-    // Check if opponent defected
-    for (const auto& action : opponentHistory) {
-        if (action == Action::Defect) {
-            opponentDefected = true;
-            break;
-        }
-    }
-
-    // If opponent defects, always defect
-    if (opponentDefected) {
+    if (state.opponentDefected) {
         return Action::Defect;
     }
-
-    // Keep cooperating otherwise
     return Action::Cooperate;
 }
 

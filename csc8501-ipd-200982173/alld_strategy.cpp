@@ -1,6 +1,6 @@
 #include "alld_strategy.hpp"
 
-Action ALLD::decideAction() {
+Action ALLD::decideAction(const GameState&) {
     return Action::Defect;
 }
 

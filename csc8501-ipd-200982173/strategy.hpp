@@ -1,19 +1,13 @@
 #pragma once
 
-#include <vector>
 #include <string>
+#include "action.hpp"
 
-enum class Action { Cooperate, Defect };
+struct GameState;
 
 class Strategy {
-protected:
-    std::vector<Action> playerHistory;
-    std::vector<Action> opponentHistory;
-
 public:
-    virtual Action decideAction() = 0;
-    virtual void recordOutcome(Action ownAction, Action opponentAction);
-    virtual void reset();
+    virtual Action decideAction(const GameState& state) = 0;
     virtual std::string name() const = 0;
     virtual ~Strategy() = default; //destructor
 };

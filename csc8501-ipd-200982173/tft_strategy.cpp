@@ -1,13 +1,12 @@
 #include "tft_strategy.hpp"
+#include "game_state.hpp" 
 
-Action TFT::decideAction() {
+Action TFT::decideAction(const GameState& state) {
     // Round 1 = always cooperate
-    if (opponentHistory.empty()) {
+    if (state.firstRound) {
         return Action::Cooperate;
     }
-
-    // Later rounds: copy opponent’s previous move
-    return opponentHistory.back();
+    return state.lastOpponentMove;
 }
 
 std::string TFT::name() const {

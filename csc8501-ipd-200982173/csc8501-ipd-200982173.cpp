@@ -10,7 +10,7 @@
 
 int main(int argc, char* argv[])
 {
-    auto strategy1 = std::make_unique<RND>(0.5);
+    auto strategy1 = std::make_unique<ALLD>();
     auto strategy2 = std::make_unique<ALLC>();
 
     Player p1(1, strategy1->name());

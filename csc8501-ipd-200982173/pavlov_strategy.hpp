@@ -3,6 +3,6 @@
 
 class PAVLOV : public Strategy {
 public:
-    Action decideAction() override;
+    Action decideAction(const GameState& state) override;
     std::string name() const override;
 };

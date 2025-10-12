@@ -132,13 +132,14 @@
     <ClCompile Include="payoff.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="rnd_strategy.cpp" />
-    <ClCompile Include="strategy.cpp" />
     <ClCompile Include="tft_strategy.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="action.hpp" />
     <ClInclude Include="allc_strategy.hpp" />
     <ClInclude Include="alld_strategy.hpp" />
     <ClInclude Include="game_manager.hpp" />
+    <ClInclude Include="game_state.hpp" />
     <ClInclude Include="grim_strategy.hpp" />
     <ClInclude Include="pavlov_strategy.hpp" />
     <ClInclude Include="payoff.hpp" />
