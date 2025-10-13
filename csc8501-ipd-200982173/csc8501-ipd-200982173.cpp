@@ -1,23 +1,21 @@
 #include <iostream>
-#include <memory>
-#include "allc_strategy.hpp"
-#include "alld_strategy.hpp"
-#include "tft_strategy.hpp"
-#include "grim_strategy.hpp"
-#include "pavlov_strategy.hpp"
-#include "rnd_strategy.hpp"
-#include "game_manager.hpp"
+#include "cli_parser.hpp"
+#include "tournament_manager.hpp"
+#include "payoff.hpp"
 
-int main(int argc, char* argv[])
-{
-    auto strategy1 = std::make_unique<ALLD>();
-    auto strategy2 = std::make_unique<ALLC>();
+int main(int argc, char* argv[]) {
+    try {
+        CommandOptions options = CLIParser::parse(argc, argv);
+        Payoff payoff(options.t, options.r, options.p, options.s);
 
-    Player p1(1, strategy1->name());
-    Player p2(2, strategy2->name());
+        std::cout << "Running IPD Tournament: "<< options.rounds << " rounds | " << options.repeats << " repeats\n";
+        TournamentManager tournament(options, payoff);
+        tournament.runTournament();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+        return 1;
+    }
 
-    Payoff payoff(5, 3, 1, 0); // T, R, P, S
-
-    GameManager ipdGame(std::move(strategy1), std::move(strategy2), p1, p2, payoff);
-    ipdGame.runGame(5);
+    return 0;
 }

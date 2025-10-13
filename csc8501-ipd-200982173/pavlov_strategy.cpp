@@ -5,8 +5,13 @@ Action PAVLOV::decideAction(const GameState& state) {
     if (state.firstRound) {
         return Action::Cooperate;
     }
-    bool movesMatch = (state.lastMove == state.lastOpponentMove);
-    return movesMatch ? Action::Cooperate : Action::Defect;
+    // If previous moves matched (CC or DD) then stay, else switch if different (CD or DC)
+    if (state.lastMove == state.lastOpponentMove) {
+        return state.lastMove;
+    }
+    else {
+        return (state.lastMove == Action::Cooperate) ? Action::Defect : Action::Cooperate;
+    }
 }
 
 std::string PAVLOV::name() const {

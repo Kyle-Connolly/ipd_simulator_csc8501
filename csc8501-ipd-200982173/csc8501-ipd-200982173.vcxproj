@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="allc_strategy.cpp" />
     <ClCompile Include="alld_strategy.cpp" />
+    <ClCompile Include="cli_parser.cpp" />
     <ClCompile Include="csc8501-ipd-200982173.cpp" />
     <ClCompile Include="game_manager.cpp" />
     <ClCompile Include="grim_strategy.cpp" />
@@ -132,12 +133,15 @@
     <ClCompile Include="payoff.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="rnd_strategy.cpp" />
+    <ClCompile Include="strategy_creator.cpp" />
     <ClCompile Include="tft_strategy.cpp" />
+    <ClCompile Include="tournament_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="action.hpp" />
     <ClInclude Include="allc_strategy.hpp" />
     <ClInclude Include="alld_strategy.hpp" />
+    <ClInclude Include="cli_parser.hpp" />
     <ClInclude Include="game_manager.hpp" />
     <ClInclude Include="game_state.hpp" />
     <ClInclude Include="grim_strategy.hpp" />
@@ -146,7 +150,9 @@
     <ClInclude Include="player.hpp" />
     <ClInclude Include="rnd_strategy.hpp" />
     <ClInclude Include="strategy.hpp" />
+    <ClInclude Include="strategy_creator.hpp" />
     <ClInclude Include="tft_strategy.hpp" />
+    <ClInclude Include="tournament_manager.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
