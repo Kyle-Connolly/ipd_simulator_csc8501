@@ -21,8 +21,8 @@ public:
     TournamentManager(const CommandOptions& options, const Payoff& payoff);
     void runTournament();
 private:
-    CommandOptions options;
-    Payoff payoff;
+    const CommandOptions& options;
+    const Payoff& payoff;
 
     std::pair<std::vector<double>, std::vector<double>> runIPD(const std::string& strat1, const std::string& strat2);
     std::string createFilename(const std::string& prefix, const std::string& extension = ".csv") const;

@@ -132,7 +132,6 @@
     <ClCompile Include="grim_strategy.cpp" />
     <ClCompile Include="pavlov_strategy.cpp" />
     <ClCompile Include="payoff.cpp" />
-    <ClCompile Include="player.cpp" />
     <ClCompile Include="rnd_strategy.cpp" />
     <ClCompile Include="strategy_creator.cpp" />
     <ClCompile Include="tft_strategy.cpp" />
@@ -148,7 +147,6 @@
     <ClInclude Include="grim_strategy.hpp" />
     <ClInclude Include="pavlov_strategy.hpp" />
     <ClInclude Include="payoff.hpp" />
-    <ClInclude Include="player.hpp" />
     <ClInclude Include="rnd_strategy.hpp" />
     <ClInclude Include="strategy.hpp" />
     <ClInclude Include="strategy_creator.hpp" />

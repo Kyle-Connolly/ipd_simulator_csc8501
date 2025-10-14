@@ -2,12 +2,11 @@
 #include "game_manager.hpp"
 #include "game_state.hpp" 
 
-GameManager::GameManager(std::unique_ptr<Strategy> s1,std::unique_ptr<Strategy> s2, Player& p1, Player& p2, const Payoff& payoff)
+GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff& payoff)
     : player1Strategy(std::move(s1)),
     player2Strategy(std::move(s2)),
-    player1(p1),
-    player2(p2),
-    payoffSystem(payoff) {}
+    payoffSystem(payoff) {
+}
 
 void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
     Action p1LastAction = Action::Cooperate;
@@ -15,10 +14,11 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
     bool p1OpponentDefected = false;
     bool p2OpponentDefected = false;
     
-	std::cout << "----------------------------------";
-    std::cout << "\nNext match: " << player1.getStrategy() << " vs " << player2.getStrategy() << "\n";
-    std::cout << "Repetition " << repetition << " of " << totalRepeats << " \n\n";
-    
+    player1Strategy->resetScore();
+    player2Strategy->resetScore();
+
+    std::cout << "----------------------------------";
+    std::cout << "\nNext match: " << player1Strategy->name() << " vs " << player2Strategy->name() << "\nRepetition " << repetition << " of " << totalRepeats << "\n\n";
 
     for (int round = 1; round <= rounds; ++round) {
         GameState state1{
@@ -53,25 +53,26 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
         double p1Score = payoffSystem.calculatePayoff(p1Cooperated, p2Cooperated);
         double p2Score = payoffSystem.calculatePayoff(p2Cooperated, p1Cooperated);
 
-        // Update scores
-        player1.addScore(static_cast<int>(p1Score));
-        player2.addScore(static_cast<int>(p2Score));
+        player1Strategy->addScore(p1Score);
+        player2Strategy->addScore(p2Score);
 
         // Store last actions for next round
         p1LastAction = p1Action;
         p2LastAction = p2Action;
 
         // Print round info
-        std::cout << "Round " << round << ": " << "PLAYER: " << player1.getID() << " chose " << (p1Cooperated ? "Cooperate" : "Defect")
-            << ", " << "PLAYER: " << player2.getID() << " chose " << (p2Cooperated ? "Cooperate" : "Defect")
-            << " | Scores: " << player1.getScore() << " - " << player2.getScore() << "\n";
+        std::cout << "Round " << round << ": "
+            << player1Strategy->name() << " chose " << (p1Cooperated ? "Cooperate" : "Defect")
+            << ", " << player2Strategy->name() << " chose " << (p2Cooperated ? "Cooperate" : "Defect")
+            << " | Scores: " << player1Strategy->getScore()
+            << " - " << player2Strategy->getScore() << "\n";
     }
 
     printResults();
 }
 
-void GameManager::printResults() {
+void GameManager::printResults() const {
     std::cout << "\nResults:\n";
-    std::cout << "PLAYER " << player1.getID() << " (" << player1.getStrategy() << ") - Total Score: " << player1.getScore() << "\n";
-    std::cout << "PLAYER " << player2.getID() << " (" << player2.getStrategy() << ") - Total Score: " << player2.getScore() << "\n";
+    std::cout << player1Strategy->name() << " - Total Score: " << player1Strategy->getScore() << "\n";
+    std::cout << player2Strategy->name() << " - Total Score: " << player2Strategy->getScore() << "\n";
 }

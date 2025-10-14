@@ -8,7 +8,6 @@
 #include <algorithm>
 #include "tournament_manager.hpp"
 #include "game_manager.hpp"
-#include "player.hpp"
 #include "strategy_creator.hpp"
 
 TournamentManager::TournamentManager(const CommandOptions& options, const Payoff& payoff)
@@ -231,14 +230,11 @@ std::pair<std::vector<double>, std::vector<double>> TournamentManager::runIPD(co
         auto p1Strategy = StrategyCreator::createStrategy(strat1);
         auto p2Strategy = StrategyCreator::createStrategy(strat2);
 
-        Player p1(1, p1Strategy->name());
-        Player p2(2, p2Strategy->name());
-
-        GameManager game(std::move(p1Strategy), std::move(p2Strategy), p1, p2, payoff);
+        GameManager game(std::move(p1Strategy), std::move(p2Strategy), payoff);
         game.runGame(options.rounds, r + 1, options.repeats);
 
-        p1Scores.push_back(p1.getScore());
-        p2Scores.push_back(p2.getScore());
+        p1Scores.push_back(game.getPlayer1Strategy()->getScore());
+        p2Scores.push_back(game.getPlayer2Strategy()->getScore());
     }
 
     return { p1Scores, p2Scores };
@@ -273,6 +269,6 @@ void TournamentManager::runTournament() {
     writePayoffMatrixFile(stratList, allResults);
     writeLeaderboardFile(stratList, allResults);
 
-    std::cout << "\n- Files location: x64 -> Debug folder\n";
+    std::cout << "\n- Files located at: x64 -> Debug folder\n";
     std::cout << "\n====Tournament Concluded==================================================================\n";
 }
