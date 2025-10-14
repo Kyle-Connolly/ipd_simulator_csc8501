@@ -7,7 +7,7 @@ Payoff::Payoff(double t, double r, double p, double s) {
 	sVal = s;
 }
 
-double Payoff::calculatePayoff(bool cooperate, bool enemyCooperate) {
+double Payoff::calculatePayoff(bool cooperate, bool enemyCooperate) const {
     if (cooperate && enemyCooperate) {
         return rVal;  // Both cooperate
     }
@@ -22,19 +22,19 @@ double Payoff::calculatePayoff(bool cooperate, bool enemyCooperate) {
     }
 }
 
-double Payoff::getT() {
+double Payoff::getT() const {
     return tVal;
 }
 
-double Payoff::getR() {
+double Payoff::getR() const {
     return rVal;
 }
 
-double Payoff::getP() {
+double Payoff::getP() const {
     return pVal;
 }
 
-double Payoff::getS() {
+double Payoff::getS() const {
     return sVal;
 }
 

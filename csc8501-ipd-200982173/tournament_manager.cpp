@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cmath>
+#include <map>
 #include "tournament_manager.hpp"
 #include "game_manager.hpp"
 #include "player.hpp"
@@ -29,9 +30,7 @@ std::string TournamentManager::createFilename() const {
     return filename.str();
 }
 
-std::pair<std::vector<double>, std::vector<double>> TournamentManager::runMatchup(
-    const std::string& strat1, const std::string& strat2) {
-
+std::pair<std::vector<double>, std::vector<double>> TournamentManager::runIPD(const std::string& strat1, const std::string& strat2) {
     std::vector<double> p1Scores;
     std::vector<double> p2Scores;
 
@@ -52,34 +51,39 @@ std::pair<std::vector<double>, std::vector<double>> TournamentManager::runMatchu
     return { p1Scores, p2Scores };
 }
 
-MatchStatistics TournamentManager::calculateStatistics(
-    const std::vector<double>& p1Scores, const std::vector<double>& p2Scores) {
-
+MatchStatistics TournamentManager::calculateStatistics(const std::vector<double>& p1Scores, const std::vector<double>& p2Scores) {
     MatchStatistics stats;
 
-    // Define lambdas for mean and stdev
+    // Calculate mean - lambda function
     auto calculateMean = [](const std::vector<double>& scores) -> double {
-        if (scores.empty()) return 0.0;
+        if (scores.empty()) {
+            return 0.0;
+        }
         double sum = 0.0;
-        for (double s : scores) sum += s;
+        for (double s : scores) {
+            sum += s;
+        }
         return sum / scores.size();
-        };
+    };
 
+    // Calculate standard deviation - lambda function
     auto calculateStdev = [](const std::vector<double>& scores, double mean) -> double {
-        if (scores.size() <= 1) return 0.0;
+        if (scores.size() <= 1) {
+            return 0.0;
+        }
         double sumSquared = 0.0;
-        for (double s : scores) sumSquared += (s - mean) * (s - mean);
+        for (double s : scores) {
+            sumSquared += (s - mean) * (s - mean);
+        }
         return std::sqrt(sumSquared / (scores.size() - 1));
-        };
+    };
 
-    // Use lambdas to compute stats
     stats.p1Mean = calculateMean(p1Scores);
     stats.p2Mean = calculateMean(p2Scores);
-
     stats.p1Stdev = calculateStdev(p1Scores, stats.p1Mean);
     stats.p2Stdev = calculateStdev(p2Scores, stats.p2Mean);
 
-    // Confidence interval calculations (same as before)
+    // Calculate Confidence Interval 
     if (options.repeats > 1) {
         double p1StandardError = stats.p1Stdev / std::sqrt(options.repeats);
         double p2StandardError = stats.p2Stdev / std::sqrt(options.repeats);
@@ -87,70 +91,127 @@ MatchStatistics TournamentManager::calculateStatistics(
         double p1CiRange = 1.96 * p1StandardError;
         double p2CiRange = 1.96 * p2StandardError;
 
-        stats.p1CiLowerStr = std::to_string(stats.p1Mean - p1CiRange);
-        stats.p1CiUpperStr = std::to_string(stats.p1Mean + p1CiRange);
-        stats.p2CiLowerStr = std::to_string(stats.p2Mean - p2CiRange);
-        stats.p2CiUpperStr = std::to_string(stats.p2Mean + p2CiRange);
+        stats.p1CILower = std::to_string(stats.p1Mean - p1CiRange);
+        stats.p1CIUpper = std::to_string(stats.p1Mean + p1CiRange);
+        stats.p2CILower = std::to_string(stats.p2Mean - p2CiRange);
+        stats.p2CIUpper = std::to_string(stats.p2Mean + p2CiRange);
     }
     else {
-        stats.p1CiLowerStr = "N/A";
-        stats.p1CiUpperStr = "N/A";
-        stats.p2CiLowerStr = "N/A";
-        stats.p2CiUpperStr = "N/A";
+        stats.p1CILower = "N/A";
+        stats.p1CIUpper = "N/A";
+        stats.p2CILower = "N/A";
+        stats.p2CIUpper = "N/A";
     }
 
     return stats;
 }
 
-void TournamentManager::writeResults(std::ofstream& csv,
-    const std::string& strat1,
-    const std::string& strat2,
-    const MatchStatistics& stats) {
-    // Console output
+void TournamentManager::writeResults(std::ofstream& csv, const std::string& strat1, const std::string& strat2, const MatchStatistics& stats) {
+	// Console output
+	std::cout << "\n---------CONFIDENCE INTERVAL---------";
     std::cout << "\n" << strat1 << " vs " << strat2 << ":\n";
-    std::cout << " Player 1 (" << strat1 << ") Mean = " << stats.p1Mean
-        << ", 95% CI [" << stats.p1CiLowerStr << ", " << stats.p1CiUpperStr << "]\n";
-    std::cout << " Player 2 (" << strat2 << ") Mean = " << stats.p2Mean
-        << ", 95% CI [" << stats.p2CiLowerStr << ", " << stats.p2CiUpperStr << "]\n";
-    std::cout << "-------------------------------------\n";
+    std::cout << " Player 1 (" << strat1 << ") Mean = " << stats.p1Mean << ", 95% CI [" << stats.p1CILower << ", " << stats.p1CIUpper << "]\n";
+    std::cout << " Player 2 (" << strat2 << ") Mean = " << stats.p2Mean << ", 95% CI [" << stats.p2CILower << ", " << stats.p2CIUpper << "]\n";
+    std::cout << "==========================================================================================\n";
 
     // CSV output
     csv << strat1 << "," << strat2 << ","
         << stats.p1Mean << "," << stats.p2Mean << ","
         << stats.p1Stdev << "," << stats.p2Stdev << ","
-        << stats.p1CiLowerStr << "," << stats.p1CiUpperStr << ","
-        << stats.p2CiLowerStr << "," << stats.p2CiUpperStr << "\n";
+        << stats.p1CILower << "," << stats.p1CIUpper << ","
+        << stats.p2CILower << "," << stats.p2CIUpper << "\n";
+}
+
+std::ofstream TournamentManager::openResultsFile(std::string& outFilename) const {
+    outFilename = createFilename();
+    std::ofstream csv(outFilename);
+
+    if (!csv.is_open()) {
+        throw std::runtime_error("Results file " + outFilename + " was not created");
+    }
+
+    return csv;
+}
+
+void TournamentManager::writeResultsFileHeader(std::ofstream& csv) const {
+    csv << "Rounds: " << options.rounds << "\n";
+    csv << "Repetitions: " << options.repeats << "\n";
+    csv << "Payoff: " << payoff.getT() << "," << payoff.getR() << "," << payoff.getP() << "," << payoff.getS() << "\n\n\n";
+    csv << "Strategy[1],Strategy[2],Mean[1],Mean[2],Stdev[1],Stdev[2],CI_Low[1],CI_Up[1],CI_Low[2],CI_Up[2]\n";
+}
+
+void TournamentManager::writePayoffMatrixFile(const std::vector<std::string>& strategies, const std::map<std::pair<std::string, std::string>, MatchStatistics>& results) const {
+    std::string filename = "payoff_matrix_" + createFilename();
+    std::ofstream payoffMatrixFile(filename);
+
+    if (!payoffMatrixFile.is_open()) {
+        throw std::runtime_error("Error - payoff matrix file: " + filename + "could not be created");
+    }
+
+    // Headers/lables/top row
+    payoffMatrixFile << ",";
+    for (const auto& strat : strategies) {
+        payoffMatrixFile << strat << ",";
+    }
+    payoffMatrixFile << "\n";
+
+    for (const auto& rowStrat : strategies) {
+        payoffMatrixFile << rowStrat << ",";
+
+        for (const auto& columnStrat : strategies) {
+			// Strategies do not play against themselves so mark with "-"
+            if (rowStrat == columnStrat) {
+                payoffMatrixFile << "-,";
+            }
+            else {
+                auto mapIterator = results.find({ rowStrat, columnStrat });
+                
+                if (mapIterator != results.end()) {
+                    payoffMatrixFile << mapIterator->second.p1Mean << ",";
+                }
+                else {
+                    payoffMatrixFile << "N/A,";
+                }
+            }
+        }
+        payoffMatrixFile << "\n";
+    }
+
+    payoffMatrixFile.close();
+
+	std::cout << "IPD Tournament Complete.";
+    std::cout << "\n- Payoff matrix saved in: " << filename;
 }
 
 void TournamentManager::runTournament() {
     std::vector<std::string> stratList = options.strategies;
-    std::string csvFileName = createFilename();
+    std::string csvFileName;
 
-    std::ofstream csv(csvFileName);
-    if (!csv.is_open()) {
-        throw std::runtime_error("Results file " + csvFileName + " was not created");
-    }
+    std::ofstream csv = openResultsFile(csvFileName);
+    writeResultsFileHeader(csv);
 
-    // Tournament header
-    csv << "Rounds: " << options.rounds << "\n";
-    csv << "Repetitions: " << options.repeats << "\n";
-    csv << "Payoff: " << payoff.getT() << "," << payoff.getR() << ","
-        << payoff.getP() << "," << payoff.getS() << "\n\n\n";
+    // For payoff matrix 
+    std::map<std::pair<std::string, std::string>, MatchStatistics> allResults;
 
-    csv << "Strategy[1],Strategy[2],Mean[1],Mean[2],Stdev[1],Stdev[2],"
-        "CI_Low[1],CI_Up[1],CI_Low[2],CI_Up[2]\n";
-
-    // Round-robin tournament loop
     for (size_t i = 0; i < stratList.size(); ++i) {
         for (size_t j = i + 1; j < stratList.size(); ++j) {
-            auto [p1Scores, p2Scores] = runMatchup(stratList[i], stratList[j]);
+            auto [p1Scores, p2Scores] = runIPD(stratList[i], stratList[j]);
             MatchStatistics stats = calculateStatistics(p1Scores, p2Scores);
             writeResults(csv, stratList[i], stratList[j], stats);
+
+            allResults[{stratList[i], stratList[j]}] = stats;
+
+			// Also store the reverse match for the payoff matrix
+            MatchStatistics statsReverse{};
+            statsReverse.p1Mean = stats.p2Mean;
+            statsReverse.p2Mean = stats.p1Mean;
+            allResults[{stratList[j], stratList[i]}] = statsReverse;
         }
     }
 
     csv.close();
+    writePayoffMatrixFile(stratList, allResults);
 
-    std::cout << "\nTournament finished. Results available in " << csvFileName << "\n";
-    std::cout << "Please find this in: x64 -> Debug folder\n";
+    std::cout << "\n- Pairwise payoffs results saved in: " << csvFileName;
+    std::cout << "\n- Results + Payoff Matrix files location: x64 -> Debug folder\n";
 }

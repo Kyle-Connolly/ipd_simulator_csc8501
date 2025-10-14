@@ -4,12 +4,12 @@ class Payoff {
 public:
 	Payoff(double t, double r, double p, double s);
 
-    double calculatePayoff(bool cooperated, bool opponentCooperated);
+    double calculatePayoff(bool cooperated, bool opponentCooperated) const;
 
-    double getT(); 
-    double getR(); 
-    double getP();
-    double getS();
+    double getT() const;
+    double getR() const;
+    double getP() const;
+    double getS() const;
 
     void setT(double newT);
     void setR(double newR);

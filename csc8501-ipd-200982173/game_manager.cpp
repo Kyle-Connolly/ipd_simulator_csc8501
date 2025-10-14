@@ -15,7 +15,7 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
     bool p1OpponentDefected = false;
     bool p2OpponentDefected = false;
     
-	std::cout << "-------------------------------------\n";
+	std::cout << "----------------------------------";
     std::cout << "\nNext match: " << player1.getStrategy() << " vs " << player2.getStrategy() << "\n";
     std::cout << "Repetition " << repetition << " of " << totalRepeats << " \n\n";
     
