@@ -1,11 +1,17 @@
 #include <iostream>
 #include "game_manager.hpp"
-#include "game_state.hpp" 
+#include "game_state.hpp"
+#include "ctft_strategy.hpp"
 
-GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff& payoff)
+GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff& payoff, double epsilon, int seed, bool noiseOn)
     : player1Strategy(std::move(s1)),
     player2Strategy(std::move(s2)),
-    payoffSystem(payoff) {
+    payoffSystem(payoff),
+    noiseOn(noiseOn),
+    epsilon(epsilon) {
+    if (noiseOn) {
+        randomNumGenerator.seed(seed);
+    }
 }
 
 void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
@@ -40,6 +46,46 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
         Action p1Action = player1Strategy->decideAction(state1);
         Action p2Action = player2Strategy->decideAction(state2);
 
+        bool p1ActionFlipped = false;
+        bool p2ActionFlipped = false;
+
+        if (noiseOn) {
+            auto* p1CtftStrat = dynamic_cast<CTFT*>(player1Strategy.get());
+            bool p1EnableNoise = (distribution(randomNumGenerator) < epsilon);  
+            Action p1OriginalAction = p1Action;
+            // Don't apply noise on the first round
+            if (!state1.firstRound && p1EnableNoise) {
+                if (!p1CtftStrat || !p1CtftStrat->isContrite()) {
+                    p1Action = (p1Action == Action::Cooperate) ? Action::Defect : Action::Cooperate;
+                    p1ActionFlipped = true;
+                }
+            }
+			// Record intended + actual move for CTFT strategy
+            if (p1CtftStrat) {
+                p1CtftStrat->setLastMoves(p1OriginalAction, p1Action);
+            }
+
+            auto* p2CtftStrat = dynamic_cast<CTFT*>(player2Strategy.get());
+            bool p2EnableNoise = (distribution(randomNumGenerator) < epsilon);
+            Action p2OriginalAction = p2Action;
+            if (!state2.firstRound && p2EnableNoise) {
+                if (!p2CtftStrat || !p2CtftStrat->isContrite()) {
+                    p2Action = (p2Action == Action::Cooperate) ? Action::Defect : Action::Cooperate;
+                    p2ActionFlipped = true;
+                }
+            }
+            if (p2CtftStrat) {
+                p2CtftStrat->setLastMoves(p2OriginalAction, p2Action);
+            }
+        }
+        else {
+            // No noise case — still record intended = actual
+            if (auto* p1CtftStrat = dynamic_cast<CTFT*>(player1Strategy.get()))
+                p1CtftStrat->setLastMoves(p1Action, p1Action);
+            if (auto* p2CtftStrat = dynamic_cast<CTFT*>(player2Strategy.get()))
+                p2CtftStrat->setLastMoves(p2Action, p2Action);
+        }
+
         // Update defection flags - used for GRIM and similar
         if (p2Action == Action::Defect)
             p1OpponentDefected = true;
@@ -66,6 +112,15 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
             << ", " << player2Strategy->name() << " chose " << (p2Cooperated ? "Cooperate" : "Defect")
             << " | Scores: " << player1Strategy->getScore()
             << " - " << player2Strategy->getScore() << "\n";
+        
+        // Only report flip if noise caused it
+        if (p1ActionFlipped) {
+            std::cout << player1Strategy->name() << " FLIPPED\n";
+        }
+        if (p2ActionFlipped) {
+            std::cout << player2Strategy->name() << " FLIPPED\n";
+        }
+
     }
 
     printResults();

@@ -230,7 +230,7 @@ std::pair<std::vector<double>, std::vector<double>> TournamentManager::runIPD(co
         auto p1Strategy = StrategyCreator::createStrategy(strat1);
         auto p2Strategy = StrategyCreator::createStrategy(strat2);
 
-        GameManager game(std::move(p1Strategy), std::move(p2Strategy), payoff);
+        GameManager game(std::move(p1Strategy), std::move(p2Strategy), payoff, options.epsilon, options.seed, options.noiseOn);
         game.runGame(options.rounds, r + 1, options.repeats);
 
         p1Scores.push_back(game.getPlayer1Strategy()->getScore());

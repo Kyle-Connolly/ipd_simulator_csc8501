@@ -128,6 +128,7 @@
     <ClCompile Include="alld_strategy.cpp" />
     <ClCompile Include="cli_parser.cpp" />
     <ClCompile Include="csc8501-ipd-200982173.cpp" />
+    <ClCompile Include="ctft_strategy.cpp" />
     <ClCompile Include="game_manager.cpp" />
     <ClCompile Include="grim_strategy.cpp" />
     <ClCompile Include="pavlov_strategy.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="allc_strategy.hpp" />
     <ClInclude Include="alld_strategy.hpp" />
     <ClInclude Include="cli_parser.hpp" />
+    <ClInclude Include="ctft_strategy.hpp" />
     <ClInclude Include="game_manager.hpp" />
     <ClInclude Include="game_state.hpp" />
     <ClInclude Include="grim_strategy.hpp" />

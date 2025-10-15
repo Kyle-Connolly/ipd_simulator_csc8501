@@ -7,6 +7,7 @@
 #include "grim_strategy.hpp"
 #include "pavlov_strategy.hpp"
 #include "rnd_strategy.hpp"
+#include "ctft_strategy.hpp"
 
 std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& stratName) {
     if (stratName == "ALLC") {
@@ -23,6 +24,9 @@ std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& str
     }
     if (stratName == "PAVLOV") {
         return std::make_unique<PAVLOV>();
+    }
+    if (stratName == "CTFT") {
+        return std::make_unique<CTFT>();
     }
 
     std::regex rndStratPattern(R"(RND([0-9]*\.?[0-9]+))");
