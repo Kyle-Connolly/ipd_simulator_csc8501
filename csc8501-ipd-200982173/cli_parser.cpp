@@ -4,14 +4,15 @@
 #include "cli_parser.hpp"
 
 CommandOptions CLIParser::parse(int argc, char* argv[]) {
-    CommandOptions options{ 0, 
-        0, 
-        {}, 
-        5.0, 
-        3.0, 
-        1.0, 
-        0.0 
+    CommandOptions options{
+        0, // --rounds
+        0, // --repeats
+		{}, // --strategies
+		5.0, 3.0, 1.0, 0.0 // --payoff (T,R,P,S) default values
     }; 
+
+    bool epsilonInput = false;
+    bool seedInput = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -55,8 +56,28 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
             options.p = payoffs[2];
             options.s = payoffs[3];
         }
+        else if (arg == "--seed" && i + 1 < argc) {
+            options.seed = std::stoi(argv[++i]);
+            seedInput = true;
+
+            if (options.seed < 0) {
+                throw std::invalid_argument("Error - seed must be a non-negative integer");
+            }
+        }
+        else if (arg == "--epsilon" && i + 1 < argc) {
+            try {
+                options.epsilon = std::stod(argv[++i]);
+                if (options.epsilon < 0.0 || options.epsilon > 1.0) {
+                    throw std::out_of_range("Error - epsilon must be between 0.0 and 1.0");
+                }
+                epsilonInput = true;
+            }
+            catch (const std::exception& e) {
+                throw std::invalid_argument(std::string("Error - Invalid value for --epsilon: ") + e.what());
+            }
+        }
         else {
-            throw std::invalid_argument("Error - Unexpected argument: " + arg);
+            throw std::invalid_argument("Error - Unexpected --argument: " + arg);
         }
     }
 
@@ -82,6 +103,14 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
     if (!(2 * options.r > options.t + options.s)) {
         throw std::invalid_argument("Error - payoff inequality detected, requires 2R > T + S to hold");
     }
-        
+
+    if (epsilonInput != seedInput) {
+        throw std::invalid_argument("Error - --epsilon and --seed must be input together.");
+    }
+
+    if (epsilonInput && seedInput) {
+        options.noiseOn = true; // Enable noise if both seed and epsilon were input
+    }
+    
     return options;
 }

@@ -270,5 +270,5 @@ void TournamentManager::runTournament() {
     writeLeaderboardFile(stratList, allResults);
 
     std::cout << "\n- Files located at: x64 -> Debug folder\n";
-    std::cout << "\n====Tournament Concluded==================================================================\n";
+    std::cout << "\n=========TOURNAMENT CONCLUDED=============================================================\n";
 }
