@@ -4,16 +4,14 @@
 #include "ctft_strategy.hpp"
 #include "prober_strategy.hpp"
 
-GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff& payoff, double epsilon, int seed, bool noiseOn)
+GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff& payoff, double epsilon, std::mt19937& randNumGen, bool noiseOn)
     : player1Strategy(std::move(s1)),
     player2Strategy(std::move(s2)),
     payoffSystem(payoff),
+    epsilon(epsilon),
     noiseOn(noiseOn),
-    epsilon(epsilon) {
-    if (noiseOn) {
-        randomNumGenerator.seed(seed);
-    }
-}
+    randNumGen(randNumGen)
+{}
 
 void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
     Action p1LastAction = Action::Cooperate;
@@ -55,7 +53,7 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
             auto* p1CtftStrat = dynamic_cast<CTFT*>(player1Strategy.get());
             Action p1OriginalAction = p1Action;
             if (!p1IsProber) {
-                bool p1EnableNoise = (distribution(randomNumGenerator) < epsilon);  
+                bool p1EnableNoise = (distribution(randNumGen) < epsilon);
                 // Don't apply noise on the first round
                 if (!state1.firstRound && p1EnableNoise) {
                     if (!p1CtftStrat || !p1CtftStrat->isContrite()) {
@@ -73,7 +71,7 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
             auto* p2CtftStrat = dynamic_cast<CTFT*>(player2Strategy.get());
             Action p2OriginalAction = p2Action;
             if (!p2IsProber) {
-                bool p2EnableNoise = (distribution(randomNumGenerator) < epsilon);
+                bool p2EnableNoise = (distribution(randNumGen) < epsilon);
                 if (!state2.firstRound && p2EnableNoise) {
                     if (!p2CtftStrat || !p2CtftStrat->isContrite()) {
                         p2Action = (p2Action == Action::Cooperate) ? Action::Defect : Action::Cooperate;
@@ -121,12 +119,12 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
             << " - " << player2Strategy->getScore() << "\n";
         
         // Only report flip if noise caused it
-        if (p1ActionFlipped) {
+        /*if (p1ActionFlipped) {
             std::cout << player1Strategy->name() << " FLIPPED\n";
         }
         if (p2ActionFlipped) {
             std::cout << player2Strategy->name() << " FLIPPED\n";
-        }
+        }*/
 
     }
 

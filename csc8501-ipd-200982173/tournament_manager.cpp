@@ -226,11 +226,14 @@ std::pair<std::vector<double>, std::vector<double>> TournamentManager::runIPD(co
     std::vector<double> p1Scores;
     std::vector<double> p2Scores;
 
+    // Single random number generator for the whole tournament
+    std::mt19937 randNumGen(options.seed);
+
     for (int r = 0; r < options.repeats; ++r) {
         auto p1Strategy = StrategyCreator::createStrategy(strat1);
         auto p2Strategy = StrategyCreator::createStrategy(strat2);
 
-        GameManager game(std::move(p1Strategy), std::move(p2Strategy), payoff, options.epsilon, options.seed, options.noiseOn);
+        GameManager game(std::move(p1Strategy), std::move(p2Strategy), payoff, options.epsilon, randNumGen, options.noiseOn);
         game.runGame(options.rounds, r + 1, options.repeats);
 
         p1Scores.push_back(game.getPlayer1Strategy()->getScore());
