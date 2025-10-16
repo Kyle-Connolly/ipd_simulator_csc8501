@@ -1,5 +1,4 @@
 #pragma once
-
 #include "strategy.hpp"
 
 class TFT : public Strategy {

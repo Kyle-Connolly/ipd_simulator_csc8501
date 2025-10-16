@@ -2,6 +2,7 @@
 #include "game_manager.hpp"
 #include "game_state.hpp"
 #include "ctft_strategy.hpp"
+#include "prober_strategy.hpp"
 
 GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff& payoff, double epsilon, int seed, bool noiseOn)
     : player1Strategy(std::move(s1)),
@@ -50,14 +51,17 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
         bool p2ActionFlipped = false;
 
         if (noiseOn) {
+            bool p1IsProber = (dynamic_cast<PROBER*>(player1Strategy.get()) != nullptr);
             auto* p1CtftStrat = dynamic_cast<CTFT*>(player1Strategy.get());
-            bool p1EnableNoise = (distribution(randomNumGenerator) < epsilon);  
             Action p1OriginalAction = p1Action;
-            // Don't apply noise on the first round
-            if (!state1.firstRound && p1EnableNoise) {
-                if (!p1CtftStrat || !p1CtftStrat->isContrite()) {
-                    p1Action = (p1Action == Action::Cooperate) ? Action::Defect : Action::Cooperate;
-                    p1ActionFlipped = true;
+            if (!p1IsProber) {
+                bool p1EnableNoise = (distribution(randomNumGenerator) < epsilon);  
+                // Don't apply noise on the first round
+                if (!state1.firstRound && p1EnableNoise) {
+                    if (!p1CtftStrat || !p1CtftStrat->isContrite()) {
+                        p1Action = (p1Action == Action::Cooperate) ? Action::Defect : Action::Cooperate;
+                        p1ActionFlipped = true;
+                    }
                 }
             }
 			// Record intended + actual move for CTFT strategy
@@ -65,13 +69,16 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
                 p1CtftStrat->setLastMoves(p1OriginalAction, p1Action);
             }
 
+            bool p2IsProber = (dynamic_cast<PROBER*>(player2Strategy.get()) != nullptr);
             auto* p2CtftStrat = dynamic_cast<CTFT*>(player2Strategy.get());
-            bool p2EnableNoise = (distribution(randomNumGenerator) < epsilon);
             Action p2OriginalAction = p2Action;
-            if (!state2.firstRound && p2EnableNoise) {
-                if (!p2CtftStrat || !p2CtftStrat->isContrite()) {
-                    p2Action = (p2Action == Action::Cooperate) ? Action::Defect : Action::Cooperate;
-                    p2ActionFlipped = true;
+            if (!p2IsProber) {
+                bool p2EnableNoise = (distribution(randomNumGenerator) < epsilon);
+                if (!state2.firstRound && p2EnableNoise) {
+                    if (!p2CtftStrat || !p2CtftStrat->isContrite()) {
+                        p2Action = (p2Action == Action::Cooperate) ? Action::Defect : Action::Cooperate;
+                        p2ActionFlipped = true;
+                    }
                 }
             }
             if (p2CtftStrat) {

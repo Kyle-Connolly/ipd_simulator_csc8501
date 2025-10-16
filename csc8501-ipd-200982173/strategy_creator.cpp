@@ -8,6 +8,7 @@
 #include "pavlov_strategy.hpp"
 #include "rnd_strategy.hpp"
 #include "ctft_strategy.hpp"
+#include "prober_strategy.hpp"
 
 std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& stratName) {
     if (stratName == "ALLC") {
@@ -28,6 +29,9 @@ std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& str
     if (stratName == "CTFT") {
         return std::make_unique<CTFT>();
     }
+    if (stratName == "PROBER") {
+        return std::make_unique<PROBER>();
+    }
 
     std::regex rndStratPattern(R"(RND([0-9]*\.?[0-9]+))");
     std::smatch match;
@@ -38,5 +42,5 @@ std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& str
         return std::make_unique<RND>(probability);
     }
 
-    throw std::invalid_argument("Invalid strategy: " + stratName);
+    throw std::invalid_argument("Error - Invalid strategy: " + stratName);
 }
