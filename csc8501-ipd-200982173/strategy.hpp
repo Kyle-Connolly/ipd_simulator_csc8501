@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <string>
 #include "action.hpp"
 
@@ -12,6 +13,11 @@ public:
     double getScore() const { return score; }
     void addScore(double s) { score += s; }
     void resetScore() { score = 0; }
+
+    friend std::ostream& operator<<(std::ostream& os, const Strategy& strat) {
+        os << strat.name();
+        return os;
+    }
 
 protected:
     double score = 0;

@@ -23,7 +23,7 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
     player2Strategy->resetScore();
 
     std::cout << "----------------------------------";
-    std::cout << "\nNext match: " << player1Strategy->name() << " vs " << player2Strategy->name() << "\nRepetition " << repetition << " of " << totalRepeats << "\n\n";
+    std::cout << "\nNext match: " << *player1Strategy << " vs " << *player2Strategy << "\nRepetition " << repetition << " of " << totalRepeats << "\n\n";
 
     for (int round = 1; round <= rounds; ++round) {
         GameState state1{
@@ -113,19 +113,18 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
 
         // Print round info
         std::cout << "Round " << round << ": "
-            << player1Strategy->name() << " chose " << (p1Cooperated ? "Cooperate" : "Defect")
-            << ", " << player2Strategy->name() << " chose " << (p2Cooperated ? "Cooperate" : "Defect")
+            << *player1Strategy << " chose " << (p1Cooperated ? "Cooperate" : "Defect")
+            << ", " << *player2Strategy << " chose " << (p2Cooperated ? "Cooperate" : "Defect")
             << " | Scores: " << player1Strategy->getScore()
             << " - " << player2Strategy->getScore() << "\n";
         
         // Only report flip if noise caused it
         /*if (p1ActionFlipped) {
-            std::cout << player1Strategy->name() << " FLIPPED\n";
+            std::cout << *player1Strategy << " FLIPPED\n";
         }
         if (p2ActionFlipped) {
-            std::cout << player2Strategy->name() << " FLIPPED\n";
+            std::cout << *player2Strategy << " FLIPPED\n";
         }*/
-
     }
 
     printResults();
@@ -133,6 +132,6 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
 
 void GameManager::printResults() const {
     std::cout << "\nResults:\n";
-    std::cout << player1Strategy->name() << " - Total Score: " << player1Strategy->getScore() << "\n";
-    std::cout << player2Strategy->name() << " - Total Score: " << player2Strategy->getScore() << "\n";
+    std::cout << *player1Strategy << " - Total Score: " << player1Strategy->getScore() << "\n";
+    std::cout << *player2Strategy << " - Total Score: " << player2Strategy->getScore() << "\n";
 }
