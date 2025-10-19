@@ -6,10 +6,10 @@
 int main(int argc, char* argv[]) {
     try {
         CommandOptions options = CLIParser::parse(argc, argv);
-        Payoff payoff(options.t, options.r, options.p, options.s);
-        TournamentManager tournament(options, payoff);
+        Payoff<double> payoff(options.t, options.r, options.p, options.s);
+        TournamentManager<double> tournament(options, payoff);
 
-        std::cout << "Running IPD Tournament: " << options.rounds << " rounds | " << options.repeats << " repeats | ";
+        std::cout << "=====RUNNING IPD TOURNAMENT=====: " << options.rounds << " rounds | " << options.repeats << " repeats | ";
         if (options.noiseOn) {
             std::cout << "epsilon: " << options.epsilon << " | seed: " << options.seed << "\n";
         }
@@ -17,6 +17,13 @@ int main(int argc, char* argv[]) {
             std::cout << "epsilon: 0.0 | seed: 0\n";
         }
         
+        /*if (options.evolve) {
+            tournament.runEvolutionaryTournament();
+        }
+        else {
+            tournament.runTournament();
+        }*/
+
         tournament.runTournament();
     }
     catch (const std::exception& e) {

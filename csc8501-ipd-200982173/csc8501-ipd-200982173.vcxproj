@@ -102,7 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,15 +129,18 @@
     <ClCompile Include="cli_parser.cpp" />
     <ClCompile Include="csc8501-ipd-200982173.cpp" />
     <ClCompile Include="ctft_strategy.cpp" />
-    <ClCompile Include="game_manager.cpp" />
+    <ClCompile Include="game_manager.tpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="grim_strategy.cpp" />
     <ClCompile Include="pavlov_strategy.cpp" />
-    <ClCompile Include="payoff.cpp" />
     <ClCompile Include="prober_strategy.cpp" />
     <ClCompile Include="rnd_strategy.cpp" />
     <ClCompile Include="strategy_creator.cpp" />
     <ClCompile Include="tft_strategy.cpp" />
-    <ClCompile Include="tournament_manager.cpp" />
+    <ClCompile Include="tournament_manager.tpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="action.hpp" />
@@ -156,6 +159,11 @@
     <ClInclude Include="strategy_creator.hpp" />
     <ClInclude Include="tft_strategy.hpp" />
     <ClInclude Include="tournament_manager.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="payoff.tpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

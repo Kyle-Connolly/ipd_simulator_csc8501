@@ -18,10 +18,7 @@
     <ClCompile Include="csc8501-ipd-200982173.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="payoff.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="game_manager.cpp">
+    <ClCompile Include="game_manager.tpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="allc_strategy.cpp">
@@ -48,7 +45,7 @@
     <ClCompile Include="strategy_creator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tournament_manager.cpp">
+    <ClCompile Include="tournament_manager.tpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ctft_strategy.cpp">
@@ -107,5 +104,10 @@
     <ClInclude Include="prober_strategy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="payoff.tpp">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

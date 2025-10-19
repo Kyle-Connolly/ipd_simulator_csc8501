@@ -16,13 +16,15 @@ struct MatchStatistics {
     std::string p2CIUpper;
 };
 
+template <typename T>
 class TournamentManager {
 public:
-    TournamentManager(const CommandOptions& options, const Payoff& payoff);
+    TournamentManager(const CommandOptions& options, const Payoff<T>& payoff);
     void runTournament();
+    //void runEvolutionaryTournament();
 private:
     const CommandOptions& options;
-    const Payoff& payoff;
+    const Payoff<T>& payoff;
 
     std::pair<std::vector<double>, std::vector<double>> runIPD(const std::string& strat1, const std::string& strat2);
     std::string createFilename(const std::string& prefix, const std::string& extension = ".csv") const;
@@ -35,3 +37,5 @@ private:
     void writePayoffMatrixFile(const std::vector<std::string>& strategies, const std::map<std::pair<std::string, std::string>, MatchStatistics>& results) const;
     void writeLeaderboardFile(const std::vector<std::string>& strategies, const std::map<std::pair<std::string, std::string>, MatchStatistics>& results) const;
 };
+
+#include "tournament_manager.tpp"

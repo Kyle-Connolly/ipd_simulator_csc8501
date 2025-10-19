@@ -1,24 +1,30 @@
 #pragma once
+#include <type_traits>
+#include <concepts>
 
+template <typename T>
+    requires std::is_arithmetic_v<T>
 class Payoff {
 public:
-	Payoff(double t, double r, double p, double s);
+    Payoff(T t, T r, T p, T s);
 
-    double calculatePayoff(bool cooperated, bool opponentCooperated) const;
+    T calculatePayoff(bool cooperate, bool enemyCooperate) const;
 
-    double getT() const;
-    double getR() const;
-    double getP() const;
-    double getS() const;
+    T getT() const { return tVal; }
+    T getR() const { return rVal; }
+    T getP() const { return pVal; }
+    T getS() const { return sVal; }
 
-    void setT(double newT);
-    void setR(double newR);
-    void setP(double newP);
-    void setS(double newS);
+    void setT(T newT) { tVal = newT; }
+    void setR(T newR) { rVal = newR; }
+    void setP(T newP) { pVal = newP; }
+    void setS(T newS) { sVal = newS; }
 
 private:
-    double tVal; // temptation - player defects while the opponent cooperates (DC)
-    double rVal; // reward - both cooperate (CC)
-    double pVal; // punishment - both defect (DD)
-    double sVal; // sucker - player cooperates while opponent defects (CD)
+    T tVal; // temptation - player defects while the opponent cooperates (DC)
+    T rVal; // reward - both cooperate (CC)
+    T pVal; // punishment - both defect (DD)
+    T sVal; // sucker - player cooperates while opponent defects (CD)
 };
+
+#include "payoff.tpp"

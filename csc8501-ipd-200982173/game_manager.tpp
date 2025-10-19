@@ -1,10 +1,10 @@
 #include <iostream>
-#include "game_manager.hpp"
 #include "game_state.hpp"
 #include "ctft_strategy.hpp"
 #include "prober_strategy.hpp"
 
-GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff& payoff, double epsilon, std::mt19937& randNumGen, bool noiseOn)
+template <typename T>
+GameManager<T>::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff<T>& payoff, double epsilon, std::mt19937& randNumGen, bool noiseOn)
     : player1Strategy(std::move(s1)),
     player2Strategy(std::move(s2)),
     payoffSystem(payoff),
@@ -13,7 +13,8 @@ GameManager::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy>
     randNumGen(randNumGen)
 {}
 
-void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
+template <typename T>
+void GameManager<T>::runGame(int rounds, int repetition, int totalRepeats) {
     Action p1LastAction = Action::Cooperate;
     Action p2LastAction = Action::Cooperate;
     bool p1OpponentDefected = false;
@@ -101,8 +102,8 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
         bool p1Cooperated = (p1Action == Action::Cooperate);
         bool p2Cooperated = (p2Action == Action::Cooperate);
 
-        double p1Score = payoffSystem.calculatePayoff(p1Cooperated, p2Cooperated);
-        double p2Score = payoffSystem.calculatePayoff(p2Cooperated, p1Cooperated);
+        T p1Score = payoffSystem.calculatePayoff(p1Cooperated, p2Cooperated);
+        T p2Score = payoffSystem.calculatePayoff(p2Cooperated, p1Cooperated);
 
         player1Strategy->addScore(p1Score);
         player2Strategy->addScore(p2Score);
@@ -130,7 +131,8 @@ void GameManager::runGame(int rounds, int repetition, int totalRepeats) {
     printResults();
 }
 
-void GameManager::printResults() const {
+template <typename T>
+void GameManager<T>::printResults() const {
     std::cout << "\nResults:\n";
     std::cout << *player1Strategy << " - Total Score: " << player1Strategy->getScore() << "\n";
     std::cout << *player2Strategy << " - Total Score: " << player2Strategy->getScore() << "\n";
