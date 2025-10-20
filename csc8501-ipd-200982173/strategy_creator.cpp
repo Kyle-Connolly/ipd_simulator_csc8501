@@ -9,6 +9,7 @@
 #include "rnd_strategy.hpp"
 #include "ctft_strategy.hpp"
 #include "prober_strategy.hpp"
+#include "trojan_strategy.hpp"
 
 std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& stratName) {
     if (stratName == "ALLC") {
@@ -31,6 +32,9 @@ std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& str
     }
     if (stratName == "PROBER") {
         return std::make_unique<PROBER>();
+    }
+    if (stratName == "TROJAN") {
+        return std::make_unique<TROJAN>();
     }
 
     std::regex rndStratPattern(R"(RND([0-9]*\.?[0-9]+))");
