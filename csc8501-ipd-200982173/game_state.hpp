@@ -8,4 +8,6 @@ struct GameState {
     bool opponentDefected;
     Action lastMove;
     Action lastOpponentMove;
+    double playerScore;
+    double opponentScore;
 };

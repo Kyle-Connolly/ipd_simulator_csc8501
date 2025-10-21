@@ -33,6 +33,8 @@ void GameManager<T>::runGame(int rounds, int repetition, int totalRepeats) {
             p1OpponentDefected,
             p1LastAction,
             p2LastAction,
+            player1Strategy->getScore(),
+            player2Strategy->getScore()
         };
 
         GameState state2{
@@ -41,6 +43,8 @@ void GameManager<T>::runGame(int rounds, int repetition, int totalRepeats) {
             p2OpponentDefected,
             p2LastAction,
             p1LastAction,
+            player2Strategy->getScore(),
+            player1Strategy->getScore()
         };
         
         Action p1Action = player1Strategy->decideAction(state1);

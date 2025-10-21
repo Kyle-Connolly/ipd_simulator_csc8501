@@ -133,6 +133,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="grim_strategy.cpp" />
+    <ClCompile Include="rival_strategy.cpp" />
     <ClCompile Include="pavlov_strategy.cpp" />
     <ClCompile Include="prober_strategy.cpp" />
     <ClCompile Include="rnd_strategy.cpp" />
@@ -152,6 +153,7 @@
     <ClInclude Include="game_manager.hpp" />
     <ClInclude Include="game_state.hpp" />
     <ClInclude Include="grim_strategy.hpp" />
+    <ClInclude Include="rival_strategy.hpp" />
     <ClInclude Include="pavlov_strategy.hpp" />
     <ClInclude Include="payoff.hpp" />
     <ClInclude Include="prober_strategy.hpp" />

@@ -10,7 +10,6 @@ public:
 
     Action decideAction(const GameState& state) override;
     std::string name() const override;
-
 private:
     std::mt19937 randNumGen;
     std::uniform_int_distribution<int> rangeLimit;
