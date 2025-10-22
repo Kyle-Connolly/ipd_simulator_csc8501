@@ -36,6 +36,9 @@ private:
     void writePairwisePayoffsFile(const std::map<std::pair<std::string, std::string>, MatchStatistics>& allResults) const;
     void writePayoffMatrixFile(const std::vector<std::string>& strategies, const std::map<std::pair<std::string, std::string>, MatchStatistics>& results) const;
     void writeLeaderboardFile(const std::vector<std::string>& strategies, const std::map<std::pair<std::string, std::string>, MatchStatistics>& results) const;
+    void writeEvolutionaryResultsFile(const std::vector<std::string>& strategies, const std::vector<std::map<std::string, double>>& populationHistory,
+        const std::map<std::pair<std::string, std::string>, MatchStatistics>& finalResults) const;
+    void writeEvolutionaryLeaderboardFile(const std::map<std::string, double>& finalPopulationShares) const;
 };
 
 #include "tournament_manager.tpp"

@@ -28,10 +28,10 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
         }
         else if (arg == "--strategies" && i + 1 < argc) {
             std::string stratlist = argv[++i];
-            std::stringstream ss(stratlist);
+            std::stringstream strStream(stratlist);
             std::string strategy;
 
-            while (std::getline(ss, strategy, ',')) {
+            while (std::getline(strStream, strategy, ',')) {
                 // Convert to uppercase
                 std::transform(strategy.begin(), strategy.end(), strategy.begin(), ::toupper);
 

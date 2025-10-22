@@ -213,22 +213,22 @@ void TournamentManager<T>::writeLeaderboardFile(const std::vector<std::string>& 
 
     // Load existing leaderboard if it exists
     std::map<std::string, LeaderboardEntry> leaderboardMerge;
-    std::ifstream infile(filename);
-    if (infile.is_open()) {
+    std::ifstream lbFile(filename);
+    if (lbFile.is_open()) {
         std::string line;
-        std::getline(infile, line); // skip header
+        std::getline(lbFile, line); // skip header
 
-        while (std::getline(infile, line)) {
-            std::stringstream ss(line);
+        while (std::getline(lbFile, line)) {
+            std::stringstream strStream(line);
             std::string rankStr;
             std::string name;
             std::string meanStr;
             std::string stdevStr;
 
-            std::getline(ss, rankStr, ',');
-            std::getline(ss, name, ',');
-            std::getline(ss, meanStr, ',');
-            std::getline(ss, stdevStr, ',');
+            std::getline(strStream, rankStr, ',');
+            std::getline(strStream, name, ',');
+            std::getline(strStream, meanStr, ',');
+            std::getline(strStream, stdevStr, ',');
 
             if (!name.empty() && !meanStr.empty() && !stdevStr.empty()) {
                 double mean = std::stod(meanStr);
@@ -236,7 +236,7 @@ void TournamentManager<T>::writeLeaderboardFile(const std::vector<std::string>& 
                 leaderboardMerge[name] = { name, mean, stdev, 1 };
             }
         }
-        infile.close();
+        lbFile.close();
     }
 
 	// Merge new and current leaderboard
@@ -347,7 +347,137 @@ void TournamentManager<T>::runTournament() {
 }
 
 template <typename T>
+void TournamentManager<T>::writeEvolutionaryResultsFile(const std::vector<std::string>& strategies, const std::vector<std::map<std::string, double>>& populationHistory,
+    const std::map<std::pair<std::string, std::string>, MatchStatistics>& finalResults) const {
+
+    std::string filename = createFilename("evolutionary_results");
+    
+    std::ofstream csv(filename);
+    if (!csv.is_open()) {
+        throw std::runtime_error("Evolutionary results file could not be created");
+    }
+
+    csv << "Payoff (T,R,P,S): " << payoff.getT() << "," << payoff.getR() << "," << payoff.getP() << "," << payoff.getS() << "\n";
+    csv << "Rounds: " << options.rounds << "\n";
+    csv << "Repeats: " << options.repeats << "\n";
+    csv << "Population size: " << options.population << "\n";
+    csv << "Generations: " << options.generations << "\n";
+    csv << "Epsilon: " << (options.noiseOn ? std::to_string(options.epsilon) : "0.0") << "\n";
+    csv << "Seed: " << (options.noiseOn ? std::to_string(options.seed) : "0") << "\n";
+    csv << "SCB enabled: " << (options.scb ? "Yes" : "No") << "\n";
+    csv << "Strategies: ";
+    for (const auto& strat : strategies) {
+        csv << strat << " ";
+    }
+    csv << "\n\n";
+
+    csv << "Generation";
+    for (const auto& strat : strategies) {
+        csv << "," << strat;
+    }  
+    csv << "\n";
+
+    for (size_t gen = 0; gen < populationHistory.size(); gen++) {
+        csv << gen + 1;
+
+        for (const auto& strat : strategies) {
+            double share = 0.0;
+
+            if (populationHistory[gen].count(strat)) {
+                share = populationHistory[gen].at(strat);
+            }
+            csv << "," << (share / options.population) * 100.0;
+        }
+        csv << "\n";
+    }
+
+    csv.close();
+    std::cout << "\n- Evolutionary results saved in: " << filename;
+}
+
+
+template <typename T>
+void TournamentManager<T>::writeEvolutionaryLeaderboardFile(const std::map<std::string, double>& finalPopulationShares) const {
+    std::string filename = "evolutionary_leaderboard.csv";
+
+    struct LeaderboardEntry {
+        std::string name;
+        double mean;
+        int count = 1;
+    };
+
+    std::map<std::string, LeaderboardEntry> leaderboardMerge;
+
+    // Load existing leaderboard if it exists
+    std::ifstream lbFile(filename);
+    if (lbFile.is_open()) {
+        std::string line;
+
+        std::getline(lbFile, line); // skip header
+
+        while (std::getline(lbFile, line)) {
+            std::stringstream strStream(line);
+            std::string rankStr;
+            std::string name;
+            std::string meanStr;
+            std::getline(strStream, rankStr, ',');
+            std::getline(strStream, name, ',');
+            std::getline(strStream, meanStr, ',');
+
+            if (!name.empty() && !meanStr.empty()) {
+                double mean = std::stod(meanStr);
+                leaderboardMerge[name] = { name, mean, 1 };
+            }
+        }
+        lbFile.close();
+    }
+
+    // // Merge new and current leaderboard
+    for (const auto& [name, share] : finalPopulationShares) {
+        double newMean = (share / options.population) * 100.0;
+        if (leaderboardMerge.contains(name)) {
+            auto& existing = leaderboardMerge[name];
+            int total = existing.count + 1;
+            existing.mean = ((existing.mean * existing.count) + newMean) / total;
+            existing.count = total;
+        }
+        else {
+            leaderboardMerge[name] = { name, newMean, 1 };
+        }
+    }
+
+    // --- Sort descending by mean ---
+    std::vector<LeaderboardEntry> leaderboardSorted;
+    for (const auto& [_, entry] : leaderboardMerge)
+        leaderboardSorted.push_back(entry);
+
+
+    // Lambda
+    auto sortMeanDescending = [](const LeaderboardEntry& a, const LeaderboardEntry& b) {
+        return a.mean > b.mean;
+        };
+
+    std::sort(leaderboardSorted.begin(), leaderboardSorted.end(), sortMeanDescending);
+
+    // Write file
+    std::ofstream csv(filename, std::ios::trunc);
+    if (!csv.is_open()) {
+        throw std::runtime_error("Evolutionary leaderboard file could not be created");
+    }
+
+    csv << "Rank,Strategy,AvgFinalShare(%)\n";
+    int rank = 1;
+    for (const auto& entry : leaderboardSorted) {
+        csv << rank++ << "," << entry.name << "," << entry.mean << "\n";
+    }
+        
+    csv.close();
+    std::cout << "\n- Evolutionary leaderboard updated: " << filename;
+}
+
+template <typename T>
 void TournamentManager<T>::runEvolutionaryTournament() {
+    std::vector<std::map<std::string, double>> populationHistory;
     std::vector<std::string> stratList = options.strategies;
     
     int populationSize = options.population;
@@ -392,11 +522,13 @@ void TournamentManager<T>::runEvolutionaryTournament() {
         return 0.0;
      };
 
+    std::map<std::pair<std::string, std::string>, MatchStatistics> results;
+
     for (int gen = 1; gen <= generations; gen++) {
         std::cout << "----------------------------------";
         std::cout << "\nGENERATION " << gen << "\n";
 
-        std::map<std::pair<std::string, std::string>, MatchStatistics> results;
+        
         std::map<std::string, double> fitness;
 
         for (size_t i = 0; i < stratList.size(); i++) {
@@ -445,6 +577,8 @@ void TournamentManager<T>::runEvolutionaryTournament() {
             
         population = newPopulation;
 
+		populationHistory.push_back(population);
+
         std::cout << "----------------------------------";
         std::cout << "\n Generation " << gen << " distribution:\n";
         for (auto& [name, share] : population)
@@ -456,5 +590,9 @@ void TournamentManager<T>::runEvolutionaryTournament() {
     for (auto& [name, share] : population) {
         std::cout << "  " << name << ": " << (share / populationSize) * 100 << "%\n";
     }
+
+    writeEvolutionaryResultsFile(stratList, populationHistory, results);
+    writeEvolutionaryLeaderboardFile(population);
+
     std::cout << "\n=========TOURNAMENT CONCLUDED=============================================================\n";
 }
