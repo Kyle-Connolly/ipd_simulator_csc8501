@@ -49,6 +49,4 @@ std::unique_ptr<Strategy> StrategyCreator::createStrategy(const std::string& str
         
         return std::make_unique<RND>(probability);
     }
-
-    throw std::invalid_argument("Error - Invalid strategy: " + stratName);
 }

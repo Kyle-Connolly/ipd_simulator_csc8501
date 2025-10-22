@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <unordered_set>
 #include "cli_parser.hpp"
 
 CommandOptions CLIParser::parse(int argc, char* argv[]) {
@@ -13,6 +14,8 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
 
     bool epsilonInput = false;
     bool seedInput = false;
+
+    const std::unordered_set<std::string> validStrategies = { "ALLD", "ALLC", "TFT", "GRIM", "PAVLOV", "RND", "CTFT", "PROBER", "TROJAN", "RIVAL" };
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -29,6 +32,17 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
             std::string strategy;
 
             while (std::getline(ss, strategy, ',')) {
+                // Convert to uppercase
+                std::transform(strategy.begin(), strategy.end(), strategy.begin(), ::toupper);
+
+                // Prefix for RND (e.g. RND0.3)
+                std::string prefix = strategy.substr(0, 3);
+
+                // Validate against registered strategies
+                if (!validStrategies.count(strategy) && prefix != "RND") {
+                    throw std::invalid_argument("Error - Invalid strategy: " + strategy);
+                }
+
                 options.strategies.push_back(strategy);
             }
         }
@@ -121,6 +135,18 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
         
     if (options.strategies.size() < 2) {
         throw std::invalid_argument("Error - at least two strategy names required.");
+    }
+
+    for (const auto& strat : options.strategies) {
+        std::string name = strat;
+        std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+
+        if (name == "TROJAN" && options.rounds < 10) {
+            throw std::invalid_argument("Error - TROJAN strategy requires at least 10 rounds.");
+        }
+        if (name == "PROBER" && options.rounds < 5) {
+            throw std::invalid_argument("Error - PROBER strategy requires at least 5 rounds.");
+        }
     }
 
     if (!(options.t > options.r && options.r > options.p && options.p > options.s)) {
