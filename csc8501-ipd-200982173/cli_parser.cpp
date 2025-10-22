@@ -95,6 +95,13 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
                 throw std::invalid_argument("Error - --generations must be positive");
             }
         }
+        else if (arg == "--scb" && i + 1 < argc) {
+            int val = std::stoi(argv[++i]);
+            if (val != 1) {
+                throw std::invalid_argument("Error - --scb must be 1 for Strategic Complexity Budget");
+            }
+            options.scb = true;
+        }
         else {
             throw std::invalid_argument("Error - Unexpected --argument: " + arg);
         }
@@ -135,6 +142,10 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
         if (options.population <= 0 || options.generations <= 0) {
             throw std::invalid_argument("Error - --evolve requires --population and --generations");
         }
+    }
+
+    if (options.scb && !options.evolve) {
+        throw std::invalid_argument("Error - --scb can only be used with --evolve.");
     }
     
     return options;

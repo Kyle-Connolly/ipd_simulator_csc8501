@@ -309,11 +309,35 @@ void TournamentManager<T>::runEvolutionaryTournament() {
     std::cout << "\n=====RUNNING IPD EVOLUTIONARY TOURNAMENT=====: " << options.rounds << " rounds | " << options.repeats << " repeats | ";
     std::cout << "population: " << populationSize << " | generations: " << generations;
     if (options.noiseOn) {
-        std::cout << "epsilon: " << options.epsilon << " | seed: " << options.seed << "\n";
+        std::cout << " | epsilon: " << options.epsilon << " | seed: " << options.seed << "\n";
     }
     else {
-        std::cout << "epsilon: 0.0 | seed: 0\n";
+        std::cout << " | epsilon: 0.0 | seed: 0\n";
     }
+
+    if (options.scb) {
+        std::cout << "Strategic Complexity Budget enabled\n";
+    }
+    else {
+        std::cout << "Strategic Complexity Budget disabled\n";
+    }
+
+    // Lambda to map strategy name to complexity cost
+    auto scbCost = [&](const std::string& name) -> double {
+        if (!options.scb) {
+            return 0.0;
+        }
+        if (name == "ALLC" || name == "ALLD" || name.starts_with("RND")) {
+            return 1.0;
+        }
+        if (name == "TFT" || name == "GRIM" || name == "PAVLOV" || name == "RIVAL") {
+            return 2.0;
+        }
+        if (name == "CTFT" || name == "PROBER" || name == "TROJAN" ) {
+            return 3.0;   
+        }  
+        return 0.0;
+     };
 
     for (int gen = 1; gen <= generations; gen++) {
         std::cout << "----------------------------------";
@@ -325,16 +349,25 @@ void TournamentManager<T>::runEvolutionaryTournament() {
         for (size_t i = 0; i < stratList.size(); i++) {
             double fitnessTotal = 0.0;
 
+            const std::string& strat_i = stratList[i];
+            double cost_i = scbCost(strat_i);
+
             for (size_t j = 0; j < stratList.size(); j++) {
                 if (i == j) {
                     continue;
                 }
+                const std::string& strat_j = stratList[j];
+
                 auto [p1Scores, p2Scores] = runIPD(stratList[i], stratList[j]);
 
                 MatchStatistics stats = calculateStatistics(p1Scores, p2Scores);
                 results[{stratList[i], stratList[j]}] = stats;
 
-                fitnessTotal += stats.p1Mean * population[stratList[j]]; // Average fitness (payoff) of strategy * current proportion of strategy
+                double scbMeanAdjustment = stats.p1Mean - cost_i; // Apply SCB cost of strategy
+
+                fitnessTotal += scbMeanAdjustment * population[strat_j]; // Average fitness (payoff) of strategy * current proportion of strategy
+
+                //fitnessTotal += stats.p1Mean * population[stratList[j]]; 
             }
 
             fitness[stratList[i]] = fitnessTotal;

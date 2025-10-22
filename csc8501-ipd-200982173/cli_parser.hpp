@@ -13,10 +13,11 @@ struct CommandOptions {
     double s;
 	bool noiseOn = false; // Flag to indicate if implementation noise is enabled for strategy actions
     int seed = 0; // Default seed
-	double epsilon = 0.0; // Probability of action flip. Default - no noise
+	double epsilon = 0.0; // Probability of action flip, default = no noise
     bool evolve = false;
     int population = 0;
     int generations = 0;
+    bool scb = false; // Strategic Complexity Budget (SCB)
 };
 
 class CLIParser {
