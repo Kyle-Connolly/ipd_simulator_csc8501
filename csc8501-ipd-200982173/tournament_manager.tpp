@@ -185,12 +185,7 @@ void TournamentManager<T>::writePayoffMatrixFile(const std::vector<std::string>&
 
 template <typename T>
 void TournamentManager<T>::writeLeaderboardFile(const std::vector<std::string>& strategies, const std::map<std::pair<std::string, std::string>, MatchStatistics>& results) const {
-    std::string filename = createFilename("leaderboard");
-    std::ofstream csv(filename);
-
-    if (!csv.is_open()) {
-        throw std::runtime_error("Leaderboard file " + filename + " could not be created");
-    }
+    std::string filename = "leaderboard.csv";
 
     std::map<std::string, std::vector<double>> strategyScores;
 
@@ -206,27 +201,85 @@ void TournamentManager<T>::writeLeaderboardFile(const std::vector<std::string>& 
         std::string name;
         double mean;
         double stdev;
+        int count = 1;
     };
 
-    std::vector<LeaderboardEntry> leaderboard;
+    std::vector<LeaderboardEntry> currentLeaderboard;
 
     for (const auto& [strat, scores] : strategyScores) {
         MatchStatistics stats = calculateStatistics(scores, {});
-        leaderboard.push_back({ strat, stats.p1Mean, stats.p1Stdev });
+        currentLeaderboard.push_back({ strat, stats.p1Mean, stats.p1Stdev });
     }
 
-    // Sort leaderboard by performance (descending order of mean payoff)
-    std::sort(leaderboard.begin(), leaderboard.end(), [](const auto& a, const auto& b) { return a.mean > b.mean; });
+    // Load existing leaderboard if it exists
+    std::map<std::string, LeaderboardEntry> leaderboardMerge;
+    std::ifstream infile(filename);
+    if (infile.is_open()) {
+        std::string line;
+        std::getline(infile, line); // skip header
+
+        while (std::getline(infile, line)) {
+            std::stringstream ss(line);
+            std::string rankStr;
+            std::string name;
+            std::string meanStr;
+            std::string stdevStr;
+
+            std::getline(ss, rankStr, ',');
+            std::getline(ss, name, ',');
+            std::getline(ss, meanStr, ',');
+            std::getline(ss, stdevStr, ',');
+
+            if (!name.empty() && !meanStr.empty() && !stdevStr.empty()) {
+                double mean = std::stod(meanStr);
+                double stdev = std::stod(stdevStr);
+                leaderboardMerge[name] = { name, mean, stdev, 1 };
+            }
+        }
+        infile.close();
+    }
+
+	// Merge new and current leaderboard
+    for (const auto& entry : currentLeaderboard) {
+        if (leaderboardMerge.contains(entry.name)) {
+            auto& existingEntry = leaderboardMerge[entry.name];
+            int total = existingEntry.count + entry.count;
+
+            existingEntry.mean = ((existingEntry.mean * existingEntry.count) + (entry.mean * entry.count)) / total;
+            existingEntry.stdev = ((existingEntry.stdev * existingEntry.count) + (entry.stdev * entry.count)) / total;
+            existingEntry.count = total;
+        }
+        else {
+            leaderboardMerge[entry.name] = entry;
+        }
+    }
+
+    std::vector<LeaderboardEntry> leaderboardSorted;
+    for (const auto& [_, entry] : leaderboardMerge) {
+        leaderboardSorted.push_back(entry);
+    }
+
+    // Lambda
+    auto sortMeanDescending = [](const LeaderboardEntry& a, const LeaderboardEntry& b) {
+        return a.mean > b.mean;
+    };
+
+    std::sort(leaderboardSorted.begin(), leaderboardSorted.end(), sortMeanDescending);
+
+    // Write file
+    std::ofstream csv(filename, std::ios::trunc);
+    if (!csv.is_open()) {
+        throw std::runtime_error("Leaderboard file could not be created");
+    }
 
     csv << "Rank,Strategy,Mean,Stdev\n";
-
-    int leaderboardRank = 1;
-    for (const auto& entry : leaderboard) {
-        csv << leaderboardRank++ << "," << entry.name << "," << entry.mean << "," << entry.stdev << "\n";
+    int rank = 1;
+    for (const auto& entry : leaderboardSorted) {
+        csv << rank++ << "," << entry.name << "," << entry.mean << "," << entry.stdev << "\n";
     }
 
     csv.close();
-    std::cout << "\n- Leaderboard saved in: " << filename;
+    std::cout << "\n- Leaderboard updated: " << filename;
 }
 
 template <typename T>
