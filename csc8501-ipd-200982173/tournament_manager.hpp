@@ -21,7 +21,7 @@ class TournamentManager {
 public:
     TournamentManager(const CommandOptions& options, const Payoff<T>& payoff);
     void runTournament();
-    //void runEvolutionaryTournament();
+    void runEvolutionaryTournament();
 private:
     const CommandOptions& options;
     const Payoff<T>& payoff;

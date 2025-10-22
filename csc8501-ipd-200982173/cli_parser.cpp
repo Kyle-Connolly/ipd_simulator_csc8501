@@ -76,6 +76,25 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
                 throw std::invalid_argument(std::string("Error - Invalid value for --epsilon: ") + e.what());
             }
         }
+        else if (arg == "--evolve" && i + 1 < argc) {
+            int val = std::stoi(argv[++i]);
+            if (val != 1) {
+                throw std::invalid_argument("Error - --evolve must be 1 to activate evolutionary tournament");
+            }
+            options.evolve = true;
+        }
+        else if (arg == "--population" && i + 1 < argc) {
+            options.population = std::stoi(argv[++i]);
+            if (options.population <= 0) {
+                throw std::invalid_argument("Error - --population must be positive");
+            }
+        }
+        else if (arg == "--generations" && i + 1 < argc) {
+            options.generations = std::stoi(argv[++i]);
+            if (options.generations <= 0) {
+                throw std::invalid_argument("Error - --generations must be positive");
+            }
+        }
         else {
             throw std::invalid_argument("Error - Unexpected --argument: " + arg);
         }
@@ -110,6 +129,12 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
 
     if (epsilonInput && seedInput) {
         options.noiseOn = true; // Enable noise if both seed and epsilon were input
+    }
+
+    if (options.evolve) {
+        if (options.population <= 0 || options.generations <= 0) {
+            throw std::invalid_argument("Error - --evolve requires --population and --generations");
+        }
     }
     
     return options;

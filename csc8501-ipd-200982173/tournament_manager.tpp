@@ -256,6 +256,14 @@ void TournamentManager<T>::runTournament() {
     std::vector<std::string> stratList = options.strategies;
     std::map<std::pair<std::string, std::string>, MatchStatistics> allResults;
 
+    std::cout << "=====RUNNING IPD TOURNAMENT=====: " << options.rounds << " rounds | " << options.repeats << " repeats | ";
+    if (options.noiseOn) {
+        std::cout << "epsilon: " << options.epsilon << " | seed: " << options.seed << "\n";
+    }
+    else {
+        std::cout << "epsilon: 0.0 | seed: 0\n";
+    }
+
     for (size_t i = 0; i < stratList.size(); ++i) {
         for (size_t j = i + 1; j < stratList.size(); ++j) {
             auto [p1Scores, p2Scores] = runIPD(stratList[i], stratList[j]);
@@ -285,97 +293,82 @@ void TournamentManager<T>::runTournament() {
     std::cout << "\n=========TOURNAMENT CONCLUDED=============================================================\n";
 }
 
-//template <typename T>
-// ------------- !!! NEEDS FIXING !!! -------------
-//void TournamentManager<T>::runEvolutionaryTournament() {
-//    std::cout << "\n===== EVOLUTIONARY TOURNAMENT START =====\n";
-//
-//    int numStrats = static_cast<int>(options.strategies.size());
-//
-//    // Initialize equal population shares as doubles
-//    std::map<std::string, double> populationShares;
-//    double initialShare = static_cast<double>(options.population) / numStrats;
-//    for (auto& strat : options.strategies)
-//        populationShares[strat] = initialShare;
-//
-//    for (int gen = 1; gen <= options.generations; ++gen) {
-//        std::cout << "\n-- Generation " << gen << " --\n";
-//
-//        // 1. Calculate average payoffs for each strategy
-//        std::map<std::string, double> avgPayoffs;
-//        for (auto& s1 : options.strategies) {
-//            double totalScore = 0.0;
-//            double totalWeight = 0.0;
-//
-//            for (auto& s2 : options.strategies) {
-//                if (s1 == s2) continue;
-//
-//                auto [p1Scores, p2Scores] = runIPD(s1, s2);
-//                double meanScore = std::accumulate(p1Scores.begin(), p1Scores.end(), 0.0) / p1Scores.size();
-//
-//                totalScore += meanScore * populationShares[s2];
-//                totalWeight += populationShares[s2];
-//
-//                // DEBUG: Print match result
-//                std::cout << "Match " << s1 << " vs " << s2
-//                    << " -> meanScore: " << meanScore
-//                    << " weighted by opponent share: " << meanScore * populationShares[s2] << "\n";
-//            }
-//
-//            avgPayoffs[s1] = (totalWeight > 0.0) ? (totalScore / totalWeight) : 0.0;
-//        }
-//
-//        // DEBUG: Print average payoffs per strategy
-//        std::cout << "Average payoffs:\n";
-//        for (auto& [s, f] : avgPayoffs)
-//            std::cout << "  " << s << ": " << f << "\n";
-//
-//        // 2. Compute new shares proportionally
-//        double totalFitness = 0.0;
-//        for (auto& [s, fitness] : avgPayoffs)
-//            totalFitness += fitness;
-//
-//        std::map<std::string, double> newPopDouble;
-//        if (totalFitness > 0.0) {
-//            for (auto& [s, fitness] : avgPayoffs) {
-//                double proportion = fitness / totalFitness;
-//                newPopDouble[s] = proportion * options.population;
-//            }
-//        }
-//        else {
-//            // all fitness zero -> equal shares
-//            for (auto& s : options.strategies)
-//                newPopDouble[s] = populationShares[s];
-//        }
-//
-//        // 3. Convert to int safely
-//        std::map<std::string, int> newPopulation;
-//        int sumShares = 0;
-//        std::vector<std::pair<std::string, double>> fractions;
-//
-//        for (auto& [s, share] : newPopDouble) {
-//            int intShare = static_cast<int>(std::floor(share));
-//            newPopulation[s] = intShare;
-//            sumShares += intShare;
-//            fractions.emplace_back(s, share - intShare); // store fractional part
-//        }
-//
-//        // 4. Distribute remaining population
-//        int remaining = options.population - sumShares;
-//        std::sort(fractions.begin(), fractions.end(),
-//            [](auto& a, auto& b) { return a.second > b.second; });
-//        for (int i = 0; i < remaining; ++i)
-//            newPopulation[fractions[i % fractions.size()].first]++;
-//
-//        // 5. Update populationShares for next generation
-//        for (auto& [s, count] : newPopulation)
-//            populationShares[s] = static_cast<double>(count);
-//
-//        // Print population summary
-//        std::cout << "Population shares:\n";
-//        for (auto& [s, share] : newPopulation)
-//            std::cout << "  " << s << ": " << share << "\n";
-//    }
-//
-//    std::cout << "\n===== EVOLUTIONARY TOURNAMENT END =====\n";
-//}
+template <typename T>
+void TournamentManager<T>::runEvolutionaryTournament() {
+    std::vector<std::string> stratList = options.strategies;
+    
+    int populationSize = options.population;
+    std::map<std::string, double> population;
+    double totalShared = 1.0 / stratList.size(); // Equal population shares
+    for (const auto& strat : stratList) {
+        population[strat] = totalShared;
+    }
+        
+    int generations = options.generations;
+
+    std::cout << "\n=====RUNNING IPD EVOLUTIONARY TOURNAMENT=====: " << options.rounds << " rounds | " << options.repeats << " repeats | ";
+    std::cout << "population: " << populationSize << " | generations: " << generations;
+    if (options.noiseOn) {
+        std::cout << "epsilon: " << options.epsilon << " | seed: " << options.seed << "\n";
+    }
+    else {
+        std::cout << "epsilon: 0.0 | seed: 0\n";
+    }
+
+    for (int gen = 1; gen <= generations; gen++) {
+        std::cout << "----------------------------------";
+        std::cout << "\nGENERATION " << gen << "\n";
+
+        std::map<std::pair<std::string, std::string>, MatchStatistics> results;
+        std::map<std::string, double> fitness;
+
+        for (size_t i = 0; i < stratList.size(); i++) {
+            double fitnessTotal = 0.0;
+
+            for (size_t j = 0; j < stratList.size(); j++) {
+                if (i == j) {
+                    continue;
+                }
+                auto [p1Scores, p2Scores] = runIPD(stratList[i], stratList[j]);
+
+                MatchStatistics stats = calculateStatistics(p1Scores, p2Scores);
+                results[{stratList[i], stratList[j]}] = stats;
+
+                fitnessTotal += stats.p1Mean * population[stratList[j]]; // Average fitness (payoff) of strategy * current proportion of strategy
+            }
+
+            fitness[stratList[i]] = fitnessTotal;
+        }
+
+        // Denominator of simple proportional selection equation
+        double totalFitnessWeight = 0.0;
+        for (auto& [name, share] : population) {
+            totalFitnessWeight += share * fitness[name];
+        }
+
+		// Calculate new population shares
+        std::map<std::string, double> newPopulation;
+        for (auto& [name, share] : population) {
+            newPopulation[name] = (share * fitness[name]) / totalFitnessWeight;
+        }
+        
+        // Scale by total population size
+        for (auto& [name, share] : newPopulation) {
+            share *= populationSize;
+        }
+            
+        population = newPopulation;
+
+        std::cout << "----------------------------------";
+        std::cout << "\n Generation " << gen << " distribution:\n";
+        for (auto& [name, share] : population)
+            std::cout << "  " << name << ": " << (share / populationSize) * 100 << "%\n";
+    }
+
+    std::cout << "----------------------------------";
+    std::cout << "\nFINAL POPULATION SHARES:\n";
+    for (auto& [name, share] : population) {
+        std::cout << "  " << name << ": " << (share / populationSize) * 100 << "%\n";
+    }
+    std::cout << "\n=========TOURNAMENT CONCLUDED=============================================================\n";
+}
