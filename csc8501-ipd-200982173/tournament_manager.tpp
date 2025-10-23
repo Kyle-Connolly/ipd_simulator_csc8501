@@ -294,7 +294,7 @@ std::pair<std::vector<double>, std::vector<double>> TournamentManager<T>::runIPD
         auto p1Strategy = StrategyCreator::createStrategy(strat1);
         auto p2Strategy = StrategyCreator::createStrategy(strat2);
 
-        GameManager<double> game(std::move(p1Strategy), std::move(p2Strategy), payoff, options.epsilon, randNumGen, options.noiseOn, options.format);
+        GameManager<T> game(std::move(p1Strategy), std::move(p2Strategy), payoff, options.epsilon, randNumGen, options.noiseOn, options.format);
         game.runGame(options.rounds, r + 1, options.repeats);
 
         p1Scores.push_back(game.getPlayer1Strategy()->getScore());
@@ -597,7 +597,14 @@ void TournamentManager<T>::runEvolutionaryTournament() {
     if (options.format == "text") {
         std::cout << "----------------------------------";
         std::cout << "\nFINAL POPULATION SHARES:\n";
-        for (auto& [name, share] : population) {
+
+        std::vector<std::pair<std::string, double>> sortedPopulation(population.begin(), population.end());
+        // Descending by share
+        std::sort(sortedPopulation.begin(), sortedPopulation.end(),[](const auto& a, const auto& b) {
+            return a.second > b.second;
+        });
+
+        for (auto& [name, share] : sortedPopulation) {
             std::cout << "  " << name << ": " << (share / populationSize) * 100 << "%\n";
         }
     }

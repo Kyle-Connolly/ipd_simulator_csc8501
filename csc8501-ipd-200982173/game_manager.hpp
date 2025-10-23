@@ -10,8 +10,8 @@ public:
     GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff<T>& payoff, double epsilon, std::mt19937& randNumGen, bool noiseOn, const std::string& outputFormat);
     void runGame(int rounds, int repetition, int totalRepeats);
     void printResults() const;
-	std::unique_ptr<Strategy> getPlayer1Strategy() { return std::move(player1Strategy); }
-	std::unique_ptr<Strategy> getPlayer2Strategy() { return std::move(player2Strategy); }
+    const Strategy* getPlayer1Strategy() { return player1Strategy.get(); }
+    const Strategy* getPlayer2Strategy() { return player2Strategy.get(); }
 
 private:
     std::unique_ptr<Strategy> player1Strategy;
