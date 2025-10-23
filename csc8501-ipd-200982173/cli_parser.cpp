@@ -116,11 +116,21 @@ CommandOptions CLIParser::parse(int argc, char* argv[]) {
             }
             options.scb = true;
         }
+        else if (arg == "--format" && i + 1 < argc) {
+            options.format = argv[++i];
+            std::transform(options.format.begin(), options.format.end(), options.format.begin(), ::tolower);
+        }
         else {
             throw std::invalid_argument("Error - Unexpected --argument: " + arg);
         }
     }
 
+    if (options.format.empty()) {
+        throw std::invalid_argument("Error - --format argument is required (text or csv).");
+    }
+    if (options.format != "text" && options.format != "csv") {
+        throw std::invalid_argument("Error - Invalid --format, 'text' or 'csv' required.");
+    }
     if (options.rounds <= 0) {
         throw std::invalid_argument("Error - non positive integer for rounds.");
     }

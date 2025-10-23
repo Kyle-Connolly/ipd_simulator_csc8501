@@ -294,7 +294,7 @@ std::pair<std::vector<double>, std::vector<double>> TournamentManager<T>::runIPD
         auto p1Strategy = StrategyCreator::createStrategy(strat1);
         auto p2Strategy = StrategyCreator::createStrategy(strat2);
 
-        GameManager<double> game(std::move(p1Strategy), std::move(p2Strategy), payoff, options.epsilon, randNumGen, options.noiseOn);
+        GameManager<double> game(std::move(p1Strategy), std::move(p2Strategy), payoff, options.epsilon, randNumGen, options.noiseOn, options.format);
         game.runGame(options.rounds, r + 1, options.repeats);
 
         p1Scores.push_back(game.getPlayer1Strategy()->getScore());
@@ -323,7 +323,9 @@ void TournamentManager<T>::runTournament() {
             
             MatchStatistics stats = calculateStatistics(p1Scores, p2Scores);
             
-            outputPairwisePayoffsStats(stratList[i], stratList[j], stats);
+            if (options.format == "text") {
+                outputPairwisePayoffsStats(stratList[i], stratList[j], stats);
+            }
             
             allResults[{stratList[i], stratList[j]}] = stats;
 
@@ -338,9 +340,11 @@ void TournamentManager<T>::runTournament() {
         }
     }
 
-    writePairwisePayoffsFile(allResults);
-    writePayoffMatrixFile(stratList, allResults);
-    writeLeaderboardFile(stratList, allResults);
+    if (options.format == "csv") {
+        writePairwisePayoffsFile(allResults);
+        writePayoffMatrixFile(stratList, allResults);
+        writeLeaderboardFile(stratList, allResults);
+    }
 
     std::cout << "\n- Files located at: x64 -> Debug folder\n";
     std::cout << "\n=========TOURNAMENT CONCLUDED=============================================================\n";
@@ -525,8 +529,10 @@ void TournamentManager<T>::runEvolutionaryTournament() {
     std::map<std::pair<std::string, std::string>, MatchStatistics> results;
 
     for (int gen = 1; gen <= generations; gen++) {
-        std::cout << "----------------------------------";
-        std::cout << "\nGENERATION " << gen << "\n";
+        if (options.format == "text") {
+            std::cout << "----------------------------------";
+            std::cout << "\nGENERATION " << gen << "\n";
+        }
 
         
         std::map<std::string, double> fitness;
@@ -579,20 +585,27 @@ void TournamentManager<T>::runEvolutionaryTournament() {
 
 		populationHistory.push_back(population);
 
+        if (options.format == "text") {
+            std::cout << "----------------------------------";
+            std::cout << "\n Generation " << gen << " distribution:\n";
+            for (auto& [name, share] : population) {
+                std::cout << "  " << name << ": " << (share / populationSize) * 100 << "%\n";
+            }
+        }
+    }
+
+    if (options.format == "text") {
         std::cout << "----------------------------------";
-        std::cout << "\n Generation " << gen << " distribution:\n";
-        for (auto& [name, share] : population)
+        std::cout << "\nFINAL POPULATION SHARES:\n";
+        for (auto& [name, share] : population) {
             std::cout << "  " << name << ": " << (share / populationSize) * 100 << "%\n";
+        }
     }
 
-    std::cout << "----------------------------------";
-    std::cout << "\nFINAL POPULATION SHARES:\n";
-    for (auto& [name, share] : population) {
-        std::cout << "  " << name << ": " << (share / populationSize) * 100 << "%\n";
+    if (options.format == "csv") {
+        writeEvolutionaryResultsFile(stratList, populationHistory, results);
+        writeEvolutionaryLeaderboardFile(population);
     }
-
-    writeEvolutionaryResultsFile(stratList, populationHistory, results);
-    writeEvolutionaryLeaderboardFile(population);
 
     std::cout << "\n=========TOURNAMENT CONCLUDED=============================================================\n";
 }

@@ -18,6 +18,7 @@ struct CommandOptions {
     int population = 0;
     int generations = 0;
     bool scb = false; // Strategic Complexity Budget (SCB)
+    std::string format;
 };
 
 class CLIParser {

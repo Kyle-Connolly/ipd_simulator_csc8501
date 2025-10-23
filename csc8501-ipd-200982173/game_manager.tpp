@@ -4,13 +4,14 @@
 #include "prober_strategy.hpp"
 
 template <typename T>
-GameManager<T>::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff<T>& payoff, double epsilon, std::mt19937& randNumGen, bool noiseOn)
+GameManager<T>::GameManager(std::unique_ptr<Strategy> s1, std::unique_ptr<Strategy> s2, const Payoff<T>& payoff, double epsilon, std::mt19937& randNumGen, bool noiseOn, const std::string& outputFormat)
     : player1Strategy(std::move(s1)),
     player2Strategy(std::move(s2)),
     payoffSystem(payoff),
     epsilon(epsilon),
     noiseOn(noiseOn),
-    randNumGen(randNumGen)
+    randNumGen(randNumGen),
+    outputFormat(outputFormat)
 {}
 
 template <typename T>
@@ -23,8 +24,10 @@ void GameManager<T>::runGame(int rounds, int repetition, int totalRepeats) {
     player1Strategy->resetScore();
     player2Strategy->resetScore();
 
-    std::cout << "----------------------------------";
-    std::cout << "\nNext match: " << *player1Strategy << " vs " << *player2Strategy << "\nRepetition " << repetition << " of " << totalRepeats << "\n\n";
+    if (outputFormat == "text") {
+        std::cout << "----------------------------------";
+        std::cout << "\nNext match: " << *player1Strategy << " vs " << *player2Strategy << "\nRepetition " << repetition << " of " << totalRepeats << "\n\n";
+    }
 
     for (int round = 1; round <= rounds; ++round) {
         GameState state1{
@@ -117,22 +120,17 @@ void GameManager<T>::runGame(int rounds, int repetition, int totalRepeats) {
         p2LastAction = p2Action;
 
         // Print round info
-        std::cout << "Round " << round << ": "
-            << *player1Strategy << " chose " << (p1Cooperated ? "Cooperate" : "Defect")
-            << ", " << *player2Strategy << " chose " << (p2Cooperated ? "Cooperate" : "Defect")
-            << " | Scores: " << player1Strategy->getScore()
-            << " - " << player2Strategy->getScore() << "\n";
-        
-        // Only report flip if noise caused it
-        /*if (p1ActionFlipped) {
-            std::cout << *player1Strategy << " FLIPPED\n";
+        if (outputFormat == "text") {
+            std::cout << "Round " << round << ": "
+                << *player1Strategy << " chose " << (p1Cooperated ? "Cooperate" : "Defect")
+                << ", " << *player2Strategy << " chose " << (p2Cooperated ? "Cooperate" : "Defect")
+                << " | Scores: " << player1Strategy->getScore()
+                << " - " << player2Strategy->getScore() << "\n";
         }
-        if (p2ActionFlipped) {
-            std::cout << *player2Strategy << " FLIPPED\n";
-        }*/
     }
-
-    printResults();
+    if (outputFormat == "text") {
+        printResults();
+    }
 }
 
 template <typename T>
