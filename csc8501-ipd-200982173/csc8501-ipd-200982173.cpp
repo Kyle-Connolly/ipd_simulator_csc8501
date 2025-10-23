@@ -15,8 +15,6 @@ int main(int argc, char* argv[]) {
         else {
             tournament.runTournament();
         }
-
-        //tournament.runTournament();
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";

@@ -557,8 +557,6 @@ void TournamentManager<T>::runEvolutionaryTournament() {
                 double scbMeanAdjustment = stats.p1Mean - cost_i; // Apply SCB cost of strategy
 
                 fitnessTotal += scbMeanAdjustment * population[strat_j]; // Average fitness (payoff) of strategy * current proportion of strategy
-
-                //fitnessTotal += stats.p1Mean * population[stratList[j]]; 
             }
 
             fitness[stratList[i]] = fitnessTotal;

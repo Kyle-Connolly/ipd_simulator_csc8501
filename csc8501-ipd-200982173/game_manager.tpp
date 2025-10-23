@@ -93,17 +93,21 @@ void GameManager<T>::runGame(int rounds, int repetition, int totalRepeats) {
         }
         else {
             // No noise case — still record intended = actual
-            if (auto* p1CtftStrat = dynamic_cast<CTFT*>(player1Strategy.get()))
+            if (auto* p1CtftStrat = dynamic_cast<CTFT*>(player1Strategy.get())) {
                 p1CtftStrat->setLastMoves(p1Action, p1Action);
-            if (auto* p2CtftStrat = dynamic_cast<CTFT*>(player2Strategy.get()))
+            }
+            if (auto* p2CtftStrat = dynamic_cast<CTFT*>(player2Strategy.get())) {
                 p2CtftStrat->setLastMoves(p2Action, p2Action);
+            } 
         }
 
         // Update defection flags - used for GRIM and similar
-        if (p2Action == Action::Defect)
+        if (p2Action == Action::Defect) {
             p1OpponentDefected = true;
-        if (p1Action == Action::Defect)
+        }
+        if (p1Action == Action::Defect) {
             p2OpponentDefected = true;
+        }         
 
         // Convert Action to bool for payoff calculation
         bool p1Cooperated = (p1Action == Action::Cooperate);
